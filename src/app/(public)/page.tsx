@@ -34,7 +34,7 @@ export default function Home() {
           >
             <div className="inline-flex items-center gap-2 bg-brand-50 border border-brand-100 px-4 py-2 rounded-full text-brand-700 text-sm font-bold shadow-sm">
               <Sparkles className="w-4 h-4" />
-              <span>{t("trustedBy")}</span>
+              <span>Designed for Professional Use</span>
             </div>
             
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-black leading-[1.1] text-slate-900 tracking-tight">
@@ -72,7 +72,7 @@ export default function Home() {
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle className="w-5 h-5 text-green-500" />
-                Clinical Grade
+                Protocol Based
               </div>
             </div>
           </motion.div>
@@ -179,11 +179,11 @@ export default function Home() {
           <div className="grid lg:grid-cols-2 gap-20 items-center">
             <motion.div {...fadeInUp} className="space-y-8">
               <h2 className="text-4xl md:text-5xl font-black leading-tight tracking-tight">
-                Clinically Driven <br />
+                Protocol-Driven <br />
                 <span className="text-brand-400">Safety First</span> Logic
               </h2>
               <p className="text-xl text-slate-400 leading-relaxed max-w-lg">
-                Our AI isn't just a chatbot. It's a precise triage engine built on rigorous medical protocols to ensure you're never in danger.
+                Our AI isn't just a chatbot. It's an assistive triage tool built on rigorous medical protocols to ensure you're never in danger.
               </p>
               
               <div className="grid sm:grid-cols-2 gap-6 pt-4">
@@ -227,7 +227,7 @@ export default function Home() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-brand-400">Triage Accuracy</span>
-                    <span className="text-xs text-slate-500 px-2 py-1 bg-slate-800 rounded-md">CERTIFIED</span>
+                    <span className="text-xs text-slate-500 px-2 py-1 bg-slate-800 rounded-md">VERIFIED</span>
                   </div>
                   <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
                     <motion.div 
