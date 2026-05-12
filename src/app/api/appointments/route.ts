@@ -56,7 +56,7 @@ export async function POST(request: Request) {
         sessionId,
         patientName: sanitizeInput(patientName),
         patientEmail: sanitizeEmail(patientEmail),
-        patientPhone: sanitizeInput(patientPhone),
+        patientPhone: sanitizeInput(patientPhone || ''),
         scheduledFor: scheduledDate,
         providerId: 'mock-provider-1',
         providerName,

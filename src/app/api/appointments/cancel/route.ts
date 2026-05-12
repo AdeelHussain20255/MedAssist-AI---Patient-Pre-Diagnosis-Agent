@@ -7,8 +7,13 @@ import { sendWithRetry } from '@/lib/email'; // Need to export sendWithRetry or 
 export async function POST(request: Request) {
   try {
     const ip = getClientIP(request);
-    const { success, retryAfter } = checkRateLimit(ip, RATE_LIMITS.GENERAL);
-    if (!success) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    const { success, retryAfter } = await checkRateLimit(ip, RATE_LIMITS.GENERAL);
+    if (!success) {
+      return NextResponse.json(
+        { error: 'Too many requests' },
+        { status: 429, headers: { 'Retry-After': retryAfter.toString() } }
+      );
+    }
 
     const body = await request.json();
     const result = CancellationSchema.safeParse(body);
