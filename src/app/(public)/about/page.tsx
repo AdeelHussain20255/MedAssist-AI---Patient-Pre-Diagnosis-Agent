@@ -107,7 +107,7 @@ export default function AboutPage() {
                   <ShieldCheck size={32} />
                 </div>
                 <h4 className="text-3xl font-black">
-                  Clinically <br />
+                  Protocol-Based <br />
                   <span className="text-brand-400">Validated</span> Logic
                 </h4>
                 <p className="text-slate-400 text-lg leading-relaxed">
@@ -117,7 +117,7 @@ export default function AboutPage() {
               
               <ul className="space-y-6">
                 {[
-                  "Verified Red-Flag Detection",
+                  "Protocol Red-Flag Detection",
                   "Bilingual Support (English & Urdu)",
                   "End-to-End Data Privacy"
                 ].map((item, i) => (
@@ -149,7 +149,7 @@ export default function AboutPage() {
           
           <div className="grid grid-cols-2 md:grid-cols-3 gap-12 pt-12">
             {[
-              { val: "95%", label: "Accuracy Rate" },
+              { val: "95%", label: "Satisfaction Rate" },
               { val: "< 3m", label: "Avg. Triage Time" },
               { val: "24/7", label: "Always Active" },
             ].map((stat, i) => (

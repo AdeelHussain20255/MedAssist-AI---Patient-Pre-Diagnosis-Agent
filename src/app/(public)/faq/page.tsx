@@ -14,7 +14,7 @@ const faqs = [
       },
       {
         q: "How accurate is the triage engine?",
-        a: "Our engine uses established clinical guidelines to categorize symptoms. While highly accurate in identifying red flags, it is always best to consult with a medical professional for a complete evaluation."
+        a: "Our engine uses established clinical guidelines to categorize symptoms. While designed to identify red flags and urgency, it is always best to consult with a medical professional for a complete evaluation."
       }
     ]
   },

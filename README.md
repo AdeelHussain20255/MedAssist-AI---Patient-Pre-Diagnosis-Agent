@@ -1,92 +1,75 @@
 # MedAssist AI - Patient Pre-Diagnosis Agent
 
-Production-grade, SEO-optimized, and security-hardened AI Patient Pre-Diagnosis Agent built with Next.js 15, Gemini AI, Supabase, and Clerk.
+Production-grade, SEO-optimized, and security-hardened AI Patient Pre-Diagnosis Agent built with **Next.js 16 (Turbopack)**, Gemini AI, Supabase, and Clerk.
 
 ## 🚀 Key Features
 - **AI Triage Engine**: Classifies symptoms into MILD, URGENT, or CRITICAL using Gemini 2.0 Flash.
 - **Safety First**: Hard-coded red flag detection (English + Urdu) runs BEFORE any AI processing.
 - **Emergency Redirect**: Instant 1122 Pakistan emergency redirect for critical cases.
+- **Distributed Rate Limiting**: Production-ready rate limiting using Upstash Redis.
+- **Audit Log Integrity**: Implemented RLS policies for immutable clinical audit trails.
 - **Multilingual**: Full English and Urdu support with RTL-aware UI.
 - **Admin Dashboard**: Real-time patient queue and triage override for clinic staff.
-- **SEO Optimized**: SSR throughout, JSON-LD, Sitemap, and Robots.txt.
-- **Secure**: OWASP-hardened, rate-limited, and RBAC via Clerk.
 
 ## 🛠 Tech Stack
-- **Frontend**: Next.js 15 (App Router), Tailwind CSS, Framer Motion
-- **Backend**: Next.js Server Actions & API Routes
+- **Frontend**: Next.js 16 (App Router / Turbopack)
 - **Database**: Supabase (Postgres) with Prisma ORM
-- **AI**: Google Gemini 2.0 Flash API
+- **Rate Limiting**: Upstash Redis (@upstash/ratelimit)
+- **AI**: Google Gemini 2.0 Flash
 - **Auth**: Clerk (RBAC)
-- **Email**: Nodemailer + Brevo SMTP
-- **Monitoring**: Sentry & PostHog
+- **Email**: Nodemailer + SMTP (Brevo/Gmail)
 
 ## 📦 Getting Started
 
-### 1. Prerequisites
-- Node.js 18+ 
-- Supabase Account (Free tier)
-- Clerk Account (Free tier)
-- Google AI Studio API Key (Gemini - Free tier)
-- Brevo/SMTP credentials
-
-### 2. Installation
+### 1. Installation
 ```bash
 git clone https://github.com/AdeelHussain20255/MedAssist-AI---Patient-Pre-Diagnosis-Agent.git
 cd patient-prediagnosis-agent
 npm install
 ```
 
-### 3. Environment Setup
-Copy `.env.example` to `.env.local` and fill in your keys:
-```bash
-cp .env.example .env.local
-```
+### 2. Environment Setup
+Copy `.env.example` to `.env.local` and fill in:
+- `DATABASE_URL` & `DIRECT_URL` (Supabase)
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` & `CLERK_SECRET_KEY`
+- `GEMINI_API_KEY`
+- `UPSTASH_REDIS_REST_URL` & `UPSTASH_REDIS_REST_TOKEN`
+- `NEXT_PUBLIC_APP_URL` (Your Vercel domain)
+- `SMTP_*` (Host, Port, User, Pass)
 
-### 4. Database Setup
+### 3. Database & Build
 ```bash
 npx prisma db push
+npm run build
 ```
 
-### 5. Run Development Server
-```bash
-npm run dev
+## 🔐 Production Configuration (Vercel)
+
+### 1. Build Command Fix
+To prevent Prisma initialization errors on Vercel, the build command is configured as:
+`prisma generate && next build`
+
+### 2. Audit Log Immutability (MANDATORY)
+Run this SQL in your Supabase SQL Editor to ensure medical logs cannot be deleted:
+```sql
+ALTER TABLE "AuditLog" ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "audit_insert_only" ON "AuditLog"
+FOR INSERT TO authenticated WITH CHECK (true);
+
+CREATE POLICY "audit_select_admin" ON "AuditLog"
+FOR SELECT TO authenticated USING (true);
 ```
 
-## 🔐 Security & Production Requirements (CRITICAL)
-
-Before deploying to production (Vercel), you MUST configure the following:
-
-1. **Distributed Rate Limiting (Redis)**:
-   - This app uses `@upstash/ratelimit`. In-memory limiting will NOT work on Vercel.
-   - Set `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN`.
-   
-2. **Audit Log Integrity**:
-   - The `AuditLog` table is your legal record. 
-   - **Requirement**: Apply the following RLS policy in Supabase to ensure immutability:
-   ```sql
-   -- Enable RLS on AuditLog
-   ALTER TABLE "AuditLog" ENABLE ROW LEVEL SECURITY;
-
-   -- App user can only INSERT
-   CREATE POLICY "audit_insert_only" ON "AuditLog"
-   FOR INSERT TO authenticated WITH CHECK (true);
-
-   -- No UPDATE/DELETE allowed (implied by omitting those policies)
-   ```
-   
-3. **Sentry & Monitoring**:
-   - Ensure `NEXT_PUBLIC_SENTRY_DSN` is set to track real-time clinical errors.
-
-4. **Clinical Review**:
-   - **MANDATORY**: Before launch, a qualified medical professional must review the triage logic in `src/lib/triage-engine.ts` and the AI system prompt in `src/lib/gemini.ts`.
-   - See [CLINICAL_REVIEW.md](./CLINICAL_REVIEW.md) for the review checklist.
+### 3. Cron Jobs
+Vercel Hobby plan supports **one daily cron job**. The configuration is set to:
+- Path: `/api/cron/reminders/24h`
+- Schedule: `0 10 * * *` (Daily at 10 AM)
 
 ## 🏥 Medical Disclaimer
-
-**IMPORTANT**: MedAssist AI is a pre-screening assistant and NOT a diagnostic tool. 
+MedAssist AI is an **assistive triage tool** and NOT a diagnostic tool. 
 - It does not replace professional medical judgment.
-- All triage classifications are preliminary and subject to clinical review.
-- The system is designed to be **conservative** and will escalate urgency when uncertain.
+- All triage classifications are preliminary and based on programmed protocols.
 - **In case of emergency, call 1122 immediately.**
 
 ## 📄 License
