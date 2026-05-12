@@ -1,0 +1,155 @@
+{
+  "common": {
+    "appName": "MedAssist AI",
+    "tagline": "Smart Pre-Screening for Better Healthcare",
+    "emergency": "Emergency? Call 1122",
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "retry": "Try Again",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "submit": "Submit",
+    "back": "Back",
+    "next": "Next",
+    "close": "Close",
+    "save": "Save",
+    "language": "Language",
+    "english": "English",
+    "urdu": "اردو"
+  },
+  "nav": {
+    "home": "Home",
+    "about": "About",
+    "howItWorks": "How It Works",
+    "faq": "FAQ",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "contact": "Contact",
+    "startChat": "Start Pre-Screening",
+    "admin": "Admin Dashboard"
+  },
+  "landing": {
+    "heroTitle": "AI-Powered Patient Pre-Screening",
+    "heroSubtitle": "Get triaged before you visit the clinic. Save time, get the right care faster.",
+    "ctaButton": "Start Pre-Screening Now",
+    "howItWorksTitle": "How It Works",
+    "step1Title": "Tell Us Your Symptoms",
+    "step1Desc": "Chat with our AI assistant about what you're experiencing",
+    "step2Title": "Get Triaged",
+    "step2Desc": "Our system assesses the urgency of your symptoms",
+    "step3Title": "Book Your Appointment",
+    "step3Desc": "Get matched with the right time slot based on urgency",
+    "trustedBy": "Trusted by Healthcare Professionals",
+    "featuresTitle": "Why Choose MedAssist AI?",
+    "feature1Title": "24/7 Available",
+    "feature1Desc": "Pre-screen your symptoms any time, day or night",
+    "feature2Title": "Clinically Guided",
+    "feature2Desc": "Based on established clinical triage protocols",
+    "feature3Title": "Quick & Easy",
+    "feature3Desc": "Complete your pre-screening in under 3 minutes",
+    "feature4Title": "Bilingual Support",
+    "feature4Desc": "Available in English and Urdu"
+  },
+  "consent": {
+    "title": "Before We Begin",
+    "disclaimer": "⚠️ This AI-powered tool assists in pre-screening only and is NOT a diagnostic tool. It does not replace professional medical judgment. All triage classifications are preliminary and subject to clinical review. If you are experiencing a medical emergency, call 1122 immediately.",
+    "checkboxLabel": "I understand and agree to proceed with pre-screening",
+    "agreeButton": "I Agree — Start Pre-Screening",
+    "emergencyNote": "🚨 If this is an emergency, please call",
+    "emergencyNumber": "1122",
+    "privacyNote": "Your data is protected. By continuing, you agree to our <privacy>Privacy Policy</privacy> and <terms>Terms of Service</terms>."
+  },
+  "chat": {
+    "greeting": "Hello! I'm MedAssist AI, your pre-screening assistant. I'm here to help understand your symptoms and guide you to the right care. What brings you in today?",
+    "placeholder": "Type your symptoms here...",
+    "send": "Send",
+    "typing": "MedAssist is thinking...",
+    "sessionEnd": "Pre-screening complete",
+    "disclaimer": "This is not a diagnosis. Please consult a healthcare professional.",
+    "inputDisabled": "Please wait for the assistant to respond..."
+  },
+  "triage": {
+    "resultTitle": "Pre-Screening Result",
+    "mild": "Mild",
+    "mildDesc": "Your symptoms suggest a non-urgent condition. We recommend scheduling a routine appointment.",
+    "urgent": "Urgent",
+    "urgentDesc": "Your symptoms may need prompt attention. We recommend seeing a doctor as soon as possible.",
+    "critical": "Critical",
+    "criticalDesc": "Your symptoms may indicate a medical emergency. Please seek immediate help.",
+    "bookAppointment": "Book Appointment",
+    "homeCare": "Home Care Tips"
+  },
+  "emergency": {
+    "title": "Please Call Emergency Services Immediately",
+    "subtitle": "Based on your symptoms, you should seek emergency medical care right away",
+    "callButton": "📞 Call 1122",
+    "clinicNotified": "Your clinic has been notified about your situation",
+    "mentalHealthTitle": "Mental Health Support",
+    "mentalHealthLine": "Umang Helpline: 0311-7786264",
+    "mentalHealthDesc": "Free, confidential mental health support available 24/7",
+    "doNotDismiss": "Your safety is our top priority"
+  },
+  "booking": {
+    "title": "Book Your Appointment",
+    "selectSlot": "Select a Time Slot",
+    "yourName": "Your Full Name",
+    "yourEmail": "Your Email Address",
+    "yourPhone": "Phone Number (optional)",
+    "confirmBooking": "Confirm Booking",
+    "noSlots": "No available slots at this time. Please try again later.",
+    "slotType": {
+      "routine": "Routine (3-7 days)",
+      "priority": "Priority (Same/Next Day)"
+    }
+  },
+  "confirmation": {
+    "title": "Appointment Confirmed! ✅",
+    "subtitle": "We've sent a confirmation email with all the details",
+    "appointmentDetails": "Appointment Details",
+    "emailSent": "Confirmation email sent to",
+    "addToCalendar": "Add to Calendar",
+    "manageAppointment": "Manage Appointment"
+  },
+  "manage": {
+    "title": "Manage Your Appointment",
+    "cancelTitle": "Cancel Appointment",
+    "rescheduleTitle": "Reschedule Appointment",
+    "cancelConfirm": "Are you sure you want to cancel?",
+    "cancelButton": "Yes, Cancel My Appointment",
+    "rescheduleButton": "Reschedule",
+    "cancelled": "Your appointment has been cancelled",
+    "rescheduled": "Your appointment has been rescheduled"
+  },
+  "admin": {
+    "dashboard": "Dashboard",
+    "patientQueue": "Patient Queue",
+    "todayStats": "Today's Statistics",
+    "total": "Total",
+    "mildCases": "Mild Cases",
+    "urgentCases": "Urgent Cases",
+    "criticalCases": "Critical Cases",
+    "override": "Override Triage",
+    "overrideReason": "Reason for Override (required)",
+    "viewDetails": "View Details",
+    "conversationLog": "Conversation Log",
+    "triageDetails": "Triage Details"
+  },
+  "cookie": {
+    "message": "We use cookies to improve your experience. By continuing, you agree to our",
+    "accept": "Accept",
+    "decline": "Decline",
+    "privacyLink": "Privacy Policy"
+  },
+  "footer": {
+    "disclaimer": "MedAssist AI is a pre-screening tool and does not provide medical diagnosis. In case of emergency, call 1122.",
+    "copyright": "© 2024 MedAssist AI. All rights reserved.",
+    "madeWith": "Made with ❤️ for better healthcare in Pakistan"
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "network": "Unable to connect. Please check your internet connection.",
+    "rateLimit": "Too many requests. Please wait a moment and try again.",
+    "sessionExpired": "Your session has expired. Please start a new pre-screening.",
+    "invalidInput": "Please check your input and try again."
+  }
+}

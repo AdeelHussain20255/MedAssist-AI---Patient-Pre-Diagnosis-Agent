@@ -1,0 +1,213 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// -----------------------------------------------------------------------------
+// PATIENT SESSION
+// Tracks a single triage session from start to finish
+// -----------------------------------------------------------------------------
+model PatientSession {
+  id               String   @id @default(uuid())
+  
+  // Consent
+  consentGiven     Boolean  @default(false)
+  consentTimestamp DateTime?
+  ipHash           String?
+  userAgent        String?
+  language         String   @default("en") // 'en' or 'ur'
+
+  // Patient Info (optional/minimal before booking)
+  age              Int?
+  gender           String?
+
+  // Medical Data
+  symptoms         String?  @db.Text
+  medicalHistory   String?  @db.Text
+  severity         Int?     // 1-10 self-reported
+
+  // AI & Triage Data
+  conversationLog  String?  @db.Text // JSON string of chat history
+  triageLevel      TriageLevel?
+  triageConfidence Float?
+  triageReasoning  String?  @db.Text
+  triageSource     TriageSource?
+  redFlagTriggered Boolean  @default(false)
+  redFlagMatches   String[] // Array of triggered flags
+
+  // Status
+  status           SessionStatus @default(IN_PROGRESS)
+  
+  // Relationships
+  appointments     Appointment[]
+  auditLogs        AuditLog[]
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([triageLevel])
+}
+
+// -----------------------------------------------------------------------------
+// APPOINTMENT
+// Created when a user completes triage and selects a slot
+// -----------------------------------------------------------------------------
+model Appointment {
+  id                String   @id @default(uuid())
+  
+  // Patient details collected at booking
+  patientName       String
+  patientEmail      String
+  patientPhone      String?
+  
+  // Schedule
+  scheduledFor      DateTime
+  
+  // Provider info (could be a relation in a full app)
+  providerId        String
+  providerName      String
+  
+  // Status & Management
+  status            ApptStatus @default(CONFIRMED)
+  cancellationToken String   @unique @default(uuid())
+  
+  // Relationships
+  sessionId         String
+  session           PatientSession @relation(fields: [sessionId], references: [id])
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([scheduledFor])
+  @@index([patientEmail])
+  @@index([status])
+}
+
+// -----------------------------------------------------------------------------
+// AUDIT LOG (Immutable)
+// Tracks all critical decisions, overrides, and system actions
+// -----------------------------------------------------------------------------
+model AuditLog {
+  id                String   @id @default(uuid())
+  
+  action            String   // e.g., "TRIAGE_COMPLETED", "TRIAGE_OVERRIDE", "APPOINTMENT_BOOKED", "JAILBREAK_ATTEMPT"
+  performedBy       String   // "SYSTEM", "AI", or Clerk userId for admin overrides
+  userId            String?  // Clerk User ID if authenticated
+  sessionId         String?
+  session           PatientSession? @relation(fields: [sessionId], references: [id])
+
+  // Contextual Data
+  details           String?  @db.Text // JSON payload of action details
+  symptomsReported  String?  @db.Text // JSON list of symptoms
+  urgencyLevel      String?  // MILD, URGENT, CRITICAL
+  messagesExchanged Int?
+  jailbreakAttempts Int      @default(0)
+  blockedPatterns   String?  @db.Text // JSON list of blocked patterns
+  
+  // Notification tracking
+  clinicNotified    Boolean  @default(false)
+  clinicId          String?
+  notifiedAt        DateTime?
+
+  timestamp         DateTime @default(now())
+
+  @@index([sessionId])
+  @@index([userId])
+  @@index([action])
+  @@index([timestamp])
+}
+
+// -----------------------------------------------------------------------------
+// USER AGREEMENTS
+// Tracks acceptance of Privacy Policy and Terms of Service
+// -----------------------------------------------------------------------------
+model UserAgreement {
+  id                    String   @id @default(uuid())
+  userId                String?  // Clerk User ID if authenticated
+  ipAddress             String?
+  userAgent             String?
+  
+  privacyPolicyVersion  String
+  termsVersion          String
+  
+  acceptedAt            DateTime @default(now())
+
+  @@index([userId])
+  @@index([ipAddress])
+}
+
+// -----------------------------------------------------------------------------
+// EMAIL LOG
+// Tracks transactional email delivery
+// -----------------------------------------------------------------------------
+model EmailLog {
+  id          String   @id @default(uuid())
+  recipient   String
+  type        EmailType
+  status      EmailStatus
+  error       String?  @db.Text
+  retryCount  Int      @default(0)
+  
+  sentAt      DateTime?
+  createdAt   DateTime @default(now())
+
+  @@index([status])
+  @@index([type])
+}
+
+// -----------------------------------------------------------------------------
+// ENUMS
+// -----------------------------------------------------------------------------
+
+enum TriageLevel {
+  MILD
+  URGENT
+  CRITICAL
+}
+
+enum TriageSource {
+  RED_FLAG
+  RULE_ENGINE
+  AI
+  MANUAL_OVERRIDE
+}
+
+enum SessionStatus {
+  IN_PROGRESS
+  TRIAGE_COMPLETE
+  BOOKED
+  REDIRECTED_EMERGENCY
+  ABANDONED
+}
+
+enum ApptStatus {
+  CONFIRMED
+  CANCELLED
+  RESCHEDULED
+  COMPLETED
+  NO_SHOW
+}
+
+enum EmailType {
+  BOOKING_CONFIRMATION
+  REMINDER_24H
+  REMINDER_1H
+  CANCELLATION
+  RESCHEDULE
+}
+
+enum EmailStatus {
+  PENDING
+  SENT
+  FAILED
+}

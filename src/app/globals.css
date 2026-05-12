@@ -1,26 +1,187 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --color-brand-50: #eff6ff;
+  --color-brand-100: #dbeafe;
+  --color-brand-200: #bfdbfe;
+  --color-brand-300: #93c5fd;
+  --color-brand-400: #60a5fa;
+  --color-brand-500: #3b82f6;
+  --color-brand-600: #2563eb;
+  --color-brand-700: #1d4ed8;
+  --color-brand-800: #1e40af;
+  --color-brand-900: #1e3a8a;
+  --color-brand-950: #172554;
+
+  --color-triage-mild: #22c55e;
+  --color-triage-mild-bg: #f0fdf4;
+  --color-triage-mild-border: #86efac;
+  --color-triage-urgent: #f59e0b;
+  --color-triage-urgent-bg: #fffbeb;
+  --color-triage-urgent-border: #fcd34d;
+  --color-triage-critical: #ef4444;
+  --color-triage-critical-bg: #fef2f2;
+  --color-triage-critical-border: #fca5a5;
+
+  --color-surface-primary: #ffffff;
+  --color-surface-secondary: #f8fafc;
+  --color-surface-tertiary: #f1f5f9;
+
+  --color-content-primary: #0f172a;
+  --color-content-secondary: #475569;
+  --color-content-tertiary: #94a3b8;
+  --color-content-inverse: #ffffff;
+
+  --radius-card: 1rem;
+  --radius-chat: 1.25rem;
+
+  --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.05), 0 1px 2px -1px rgb(0 0 0 / 0.05);
+  --shadow-card-hover: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.07);
+  --shadow-elevated: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.08);
+  --shadow-chat-bubble: 0 1px 2px 0 rgb(0 0 0 / 0.04);
+
+  --font-inter: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-urdu: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+@layer base {
+  html {
+    font-family: var(--font-inter);
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+  }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  body {
+    background-color: var(--color-surface-primary);
+    color: var(--color-content-primary);
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+
+  /* Urdu RTL support */
+  [dir="rtl"] {
+    font-family: var(--font-urdu);
+  }
+
+  /* Focus visible for accessibility */
+  *:focus-visible {
+    outline: 2px solid var(--color-brand-500);
+    outline-offset: 2px;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer components {
+  /* Card styles */
+  .card {
+    background-color: white;
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    border: 1px solid var(--color-surface-tertiary);
+    padding: 1.5rem;
+    transition: box-shadow 0.2s;
+  }
+  .card:hover {
+    box-shadow: var(--shadow-card-hover);
+  }
+
+  /* Chat bubble styles */
+  .chat-bubble-bot {
+    background-color: var(--color-surface-secondary);
+    color: var(--color-content-primary);
+    border-radius: var(--radius-chat);
+    border-top-left-radius: 0.125rem;
+    box-shadow: var(--shadow-chat-bubble);
+    padding: 0.75rem 1rem;
+    max-width: 85%;
+  }
+  .chat-bubble-user {
+    background-color: var(--color-brand-600);
+    color: white;
+    border-radius: var(--radius-chat);
+    border-top-right-radius: 0.125rem;
+    box-shadow: var(--shadow-chat-bubble);
+    padding: 0.75rem 1rem;
+    max-width: 85%;
+  }
+
+  /* Triage badges */
+  .triage-badge-mild {
+    background-color: var(--color-triage-mild-bg);
+    color: #166534;
+    border: 1px solid var(--color-triage-mild-border);
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+  .triage-badge-urgent {
+    background-color: var(--color-triage-urgent-bg);
+    color: #92400e;
+    border: 1px solid var(--color-triage-urgent-border);
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+  .triage-badge-critical {
+    background-color: var(--color-triage-critical-bg);
+    color: #991b1b;
+    border: 1px solid var(--color-triage-critical-border);
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+
+  .btn-emergency {
+    background-color: #dc2626;
+    color: white;
+    padding: 1rem 2rem;
+    border-radius: 0.75rem;
+    font-weight: 700;
+    font-size: 1.125rem;
+    transition: all 0.2s;
+    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  /* Typing indicator */
+  .typing-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    background-color: var(--color-content-tertiary);
+    border-radius: 9999px;
+    animation: typingDot 1.4s infinite ease-in-out;
+  }
+}
+
+@keyframes typingDot {
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-4px); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .7; }
+}
+
+.gradient-hero {
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #60a5fa 100%);
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-bounce-gentle {
+  animation: bounce 2s ease-in-out infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
 }

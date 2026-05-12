@@ -1,36 +1,83 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# MedAssist AI - Patient Pre-Diagnosis Agent
 
-## Getting Started
+Production-grade, SEO-optimized, and security-hardened AI Patient Pre-Diagnosis Agent built with Next.js 15, Gemini AI, Supabase, and Clerk.
 
-First, run the development server:
+## 🚀 Key Features
+- **AI Triage Engine**: Classifies symptoms into MILD, URGENT, or CRITICAL using Gemini 2.0 Flash.
+- **Safety First**: Hard-coded red flag detection (English + Urdu) runs BEFORE any AI processing.
+- **Emergency Redirect**: Instant 1122 Pakistan emergency redirect for critical cases.
+- **Multilingual**: Full English and Urdu support with RTL-aware UI.
+- **Admin Dashboard**: Real-time patient queue and triage override for clinic staff.
+- **SEO Optimized**: SSR throughout, JSON-LD, Sitemap, and Robots.txt.
+- **Secure**: OWASP-hardened, rate-limited, and RBAC via Clerk.
 
+## 🛠 Tech Stack
+- **Frontend**: Next.js 15 (App Router), Tailwind CSS, Framer Motion
+- **Backend**: Next.js Server Actions & API Routes
+- **Database**: Supabase (Postgres) with Prisma ORM
+- **AI**: Google Gemini 2.0 Flash API
+- **Auth**: Clerk (RBAC)
+- **Email**: Nodemailer + Brevo SMTP
+- **Monitoring**: Sentry & PostHog
+
+## 📦 Getting Started
+
+### 1. Prerequisites
+- Node.js 18+ 
+- Supabase Account (Free tier)
+- Clerk Account (Free tier)
+- Google AI Studio API Key (Gemini - Free tier)
+- Brevo/SMTP credentials
+
+### 2. Installation
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone [repository-url]
+cd patient-prediagnosis-agent
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 3. Environment Setup
+Copy `.env.example` to `.env.local` and fill in your keys:
+```bash
+cp .env.example .env.local
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 4. Database Setup
+```bash
+npx prisma db push
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 5. Run Development Server
+```bash
+npm run dev
+```
 
-## Learn More
+## 🔐 Security & Production Requirements (CRITICAL)
 
-To learn more about Next.js, take a look at the following resources:
+Before deploying to production (Vercel), you MUST configure the following:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. **Distributed Rate Limiting (Redis)**:
+   - This app uses `@upstash/ratelimit`. In-memory limiting will NOT work on Vercel.
+   - Set `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN`.
+   
+2. **Audit Log Integrity**:
+   - The `AuditLog` table is your legal record. 
+   - **Requirement**: Use a Database User with **INSERT-ONLY** permissions for the `AuditLog` table to prevent tampering.
+   
+3. **Sentry & Monitoring**:
+   - Ensure `NEXT_PUBLIC_SENTRY_DSN` is set to track real-time clinical errors.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+4. **Clinical Review**:
+   - **MANDATORY**: Before launch, a qualified medical professional must review the triage logic in `src/lib/triage-engine.ts` and the AI system prompt in `src/lib/gemini.ts`.
+   - See [CLINICAL_REVIEW.md](./CLINICAL_REVIEW.md) for the review checklist.
 
-## Deploy on Vercel
+## 🏥 Medical Disclaimer
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+**IMPORTANT**: MedAssist AI is a pre-screening assistant and NOT a diagnostic tool. 
+- It does not replace professional medical judgment.
+- All triage classifications are preliminary and subject to clinical review.
+- The system is designed to be **conservative** and will escalate urgency when uncertain.
+- **In case of emergency, call 1122 immediately.**
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 📄 License
+This project is for demonstration and must be medically certified before actual patient use.
