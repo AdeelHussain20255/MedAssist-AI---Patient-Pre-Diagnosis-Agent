@@ -108,21 +108,19 @@ export async function generateChatResponse(
       content: sanitizeOutput(parsed.content)
     };
 
-  } catch (error) {
+  } catch (error: any) {
+    // DIAGNOSTIC LOGGING
+    console.error("FULL GEMINI ERROR (Chat):", JSON.stringify(error, null, 2));
+    
     if (retryCount < 1) {
       logger.warn('AI JSON failed, retrying...', { error });
       return generateChatResponse(conversationHistory, userMessage, language, retryCount + 1);
     }
     
     logger.error('Gemini generateChatResponse failed after retries', error);
-    return {
-      content: language === 'ur' ? 'معذرت، ابھی ایک فنی خرابی پیش آگئی ہے۔' : 'I apologize, but I encountered a technical error. Please try again.',
-      decision: 'PENDING',
-      severity: null,
-      riskFlags: [],
-      confirmedSymptoms: [],
-      requiresFollowUp: true
-    };
+    
+    // We throw here temporarily so Vercel logs show the 500 error and the full log above
+    throw error;
   }
 }
 
@@ -191,15 +189,9 @@ Remember: when uncertain, escalate UP. Respond with JSON only.`;
       homeCareAdvice: sanitizeOutput(parsed.homeCareAdvice || ''),
       status: 'SUCCESS'
     };
-  } catch (error) {
+  } catch (error: any) {
+    console.error("FULL GEMINI ERROR (Classification):", JSON.stringify(error, null, 2));
     logger.error('Gemini getAITriageClassification error', error);
-    // Conservative fallback
-    return {
-      level: 'URGENT',
-      confidence: 0,
-      reasoning: 'AI classification failed — defaulting to URGENT for safety.',
-      homeCareAdvice: '',
-      status: 'FALLBACK'
-    };
+    throw error;
   }
 }
