@@ -22,14 +22,6 @@ export async function isClinicStaff(): Promise<boolean> {
 }
 
 /**
- * Check if the current user is an admin
- */
-export async function isAdmin(): Promise<boolean> {
-  const role = await getUserRole();
-  return role === 'admin';
-}
-
-/**
  * Require clinic staff authentication. Throws error if unauthorized.
  */
 export async function requireClinicStaff() {

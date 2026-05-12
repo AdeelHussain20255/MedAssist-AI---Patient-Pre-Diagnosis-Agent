@@ -1,5 +1,5 @@
 import { prisma } from './prisma';
-import { performLocalTriage, TriageResult } from './triage-engine';
+import { detectRiskFlags, calculateDeterministicTriage, normalizeSymptoms, TriageResult, TriageLevel } from './triage-engine';
 import { getAITriageClassification } from './gemini';
 import { logger } from './logger';
 import { createAuditLog } from './audit-service';
@@ -20,45 +20,62 @@ export async function processTriage(params: TriageParams): Promise<TriageResult 
   // 1. Get Session for context
   const session = await prisma.patientSession.findUnique({
     where: { id: sessionId },
-    select: { conversationLog: true, language: true }
+    select: { conversationLog: true, language: true, symptoms: true, severity: true, redFlagMatches: true }
   });
 
   if (!session) throw new Error('Session not found');
 
-  // 2. Perform Local Triage (Red Flags & Safety Rules)
-  const localResult = performLocalTriage({
-    primarySymptom,
-    duration: '',
-    severity,
-    additionalSymptoms,
-    medicalHistory: '',
-    conversationLog: session.conversationLog || '',
-    language: session.language as 'en' | 'ur'
-  });
+  // Merge current params with stored session data
+  const storedSymptoms = session.symptoms ? session.symptoms.split(', ') : [];
+  const rawSymptoms = Array.from(new Set([...additionalSymptoms, ...storedSymptoms]));
+  
+  // Hardening: Strict Symptom Normalization
+  const allSymptoms = normalizeSymptoms(rawSymptoms);
+  
+  const finalSeverity = Math.max(severity, session.severity || 0);
 
-  let finalTriage = localResult;
+  // 2. Perform Local Triage (Detection & Deterministic Engine)
+  const { flags: localFlags } = detectRiskFlags(`${primarySymptom} ${allSymptoms.join(' ')}`);
+  const combinedFlags = Array.from(new Set([...localFlags, ...(session.redFlagMatches || [])]));
+  
+  const deterministicResult = calculateDeterministicTriage(allSymptoms, finalSeverity, combinedFlags);
+
+  let finalTriage: TriageResult = {
+    level: deterministicResult.level,
+    confidence: 1.0, 
+    reasoning: deterministicResult.reasoning,
+    riskFlags: localFlags,
+    requiresMentalHealthResources: localFlags.includes('mental_health_potential'),
+    source: 'RULE_ENGINE'
+  };
   let homeCareAdvice = "";
 
   // 3. AI Escalation (Only if not already critical)
-  if (localResult.level !== 'CRITICAL') {
+  if (finalTriage.level !== 'CRITICAL') {
     const aiResult = await getAITriageClassification(
       session.conversationLog || '',
-      `${primarySymptom}. Additional: ${additionalSymptoms.join(', ')}`,
-      severity
+      `${primarySymptom}. Additional: ${allSymptoms.join(', ')}`,
+      finalSeverity
     );
 
-    // Conservative Escalation: Higher severity wins
-    const scores = { MILD: 1, URGENT: 2, CRITICAL: 3 };
-    if (scores[aiResult.level] > scores[localResult.level]) {
-      finalTriage = {
-        ...localResult,
-        level: aiResult.level,
-        confidence: aiResult.confidence,
-        reasoning: aiResult.reasoning,
-        source: 'AI'
-      };
+    // Hardening: Only escalate if AI succeeded and suggested higher severity
+    if (aiResult.status === 'SUCCESS') {
+      const scores: Record<TriageLevel, number> = { MILD: 1, URGENT: 2, CRITICAL: 3 };
+      if (scores[aiResult.level] > scores[finalTriage.level]) {
+        finalTriage = {
+          ...finalTriage,
+          level: aiResult.level,
+          confidence: aiResult.confidence,
+          reasoning: `${finalTriage.reasoning} | AI Escalation: ${aiResult.reasoning}`,
+          source: 'AI'
+        };
+      }
+      homeCareAdvice = aiResult.homeCareAdvice;
+    } else {
+      // AI Fallback handling: Trust Rule Engine but flag it
+      finalTriage.reasoning += " (AI Classification Unavailable - Using Rule Engine Safety)";
+      logger.warn('Triage AI fallback triggered', { sessionId });
     }
-    homeCareAdvice = aiResult.homeCareAdvice;
   }
 
   // 4. Persistence & Audit
@@ -74,8 +91,8 @@ export async function processTriage(params: TriageParams): Promise<TriageResult 
       triageConfidence: finalTriage.confidence,
       triageReasoning: finalTriage.reasoning,
       triageSource: finalTriage.source,
-      redFlagTriggered: finalTriage.redFlagTriggered,
-      redFlagMatches: finalTriage.redFlagMatches,
+      redFlagTriggered: finalTriage.riskFlags.length > 0,
+      redFlagMatches: finalTriage.riskFlags,
       status: finalTriage.level === 'CRITICAL' ? 'REDIRECTED_EMERGENCY' : 'TRIAGE_COMPLETE',
     }
   });

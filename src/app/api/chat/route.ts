@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { generateChatResponse } from '@/lib/gemini';
-import { detectRedFlags } from '@/lib/triage-engine';
+import { detectRiskFlags, calculateDeterministicTriage } from '@/lib/triage-engine';
 import { ChatMessageSchema } from '@/lib/validations';
 import { checkRateLimit, RATE_LIMITS, getClientIP } from '@/lib/rate-limit';
 import { logger } from '@/lib/logger';
@@ -60,54 +60,58 @@ export async function POST(request: Request) {
       }
     }
 
-    // 4. Safety Check: Red Flags & Emergency Rate Limit
-    const { matches, isMentalHealth } = detectRedFlags(message);
-    if (matches.length > 0) {
-      // Emergency alert rate limit
-      const { success: alertSuccess } = await checkRateLimit(
-        userId || ip,
-        RATE_LIMITS.EMERGENCY_ALERTS
-      );
+    // 4. Stage 1: Detection (Local Regex Safety)
+    const { flags: localFlags, isMentalHealth } = detectRiskFlags(message);
 
-      if (!alertSuccess) {
-        logger.warn('Rate limit exceeded: EMERGENCY_ALERTS', { userId, ip });
-        // We still allow it but maybe flag it in audit
-      }
+    // 5. Generate AI Data Extraction (Stage 2 & 3)
+    const history = sessionId ? await getConversationHistory(sessionId) : [];
+    const aiResult = await generateChatResponse(history, message, language);
 
-      logger.critical('Emergency Red Flag Detected', { sessionId, matches, isMentalHealth });
+    // 6. Stage 4: Deterministic Decision Engine (Backend Authority)
+    const { content: aiResponse, decision: aiDecision, severity, confirmedSymptoms } = aiResult;
+    
+    // Calculate deterministic result from extracted symptoms + regex safety
+    const { level: finalLevelResult } = calculateDeterministicTriage(confirmedSymptoms, severity, localFlags);
+    
+    // Safety Rule: If AI is 100% sure it's CRITICAL, respect it, otherwise trust backend
+    const finalLevel = aiDecision === 'CRITICAL' ? 'CRITICAL' : finalLevelResult;
+
+    // 7. Persistence
+    if (sessionId) {
+      await saveConversationMessage(sessionId, message, aiResponse, language, {
+        riskFlags: Array.from(new Set([...localFlags, ...aiResult.riskFlags])),
+        severity: severity || undefined,
+        symptoms: confirmedSymptoms
+      });
+    }
+
+    // 8. Handle Critical Redirect based on Backend Authority
+    if (finalLevel === 'CRITICAL') {
+      logger.critical('Final Decision: CRITICAL Triage reached', { sessionId, localFlags, confirmedSymptoms });
       
       await createAuditLog({
         action: 'EMERGENCY_DETECTED',
-        performedBy: 'SYSTEM',
+        performedBy: 'HYBRID_ENGINE',
         userId: userId || undefined,
         sessionId,
         urgencyLevel: 'CRITICAL',
-        details: { matches, message },
-        symptomsReported: matches,
+        details: { localFlags, confirmedSymptoms, aiDecision, message },
       });
 
       return NextResponse.json({
         type: 'critical_redirect',
-        reason: 'Red flag detected',
-        matches,
+        reason: 'Hybrid Engine: Critical severity confirmed',
+        matches: Array.from(new Set([...localFlags, ...confirmedSymptoms])),
         isMentalHealth
       });
-    }
-
-    // 5. Generate AI Response using history
-    const history = sessionId ? await getConversationHistory(sessionId) : [];
-    const aiResponse = await generateChatResponse(history, message, language);
-
-    // 6. Persistence
-    if (sessionId) {
-      await saveConversationMessage(sessionId, message, aiResponse, language);
     }
 
     const duration = Date.now() - startTime;
     logger.info('Chat response generated', { 
       sessionId, 
       durationMs: duration,
-      msgLength: message.length 
+      finalLevel,
+      aiDecision
     });
 
     return NextResponse.json({

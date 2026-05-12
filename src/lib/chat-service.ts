@@ -27,13 +27,14 @@ export async function getConversationHistory(sessionId: string): Promise<ChatMes
 }
 
 /**
- * Save new messages to the conversation history
+ * Save new messages to the conversation history with optional metadata
  */
 export async function saveConversationMessage(
   sessionId: string,
   userMessage: string,
   aiResponse: string,
-  language: string
+  language: string,
+  metadata?: { riskFlags?: string[]; severity?: number; symptoms?: string[] }
 ): Promise<void> {
   try {
     const history = await getConversationHistory(sessionId);
@@ -47,6 +48,9 @@ export async function saveConversationMessage(
       where: { id: sessionId },
       update: {
         conversationLog: JSON.stringify(updatedHistory),
+        redFlagMatches: metadata?.riskFlags ? { push: metadata.riskFlags } : undefined,
+        severity: metadata?.severity || undefined,
+        symptoms: metadata?.symptoms ? metadata.symptoms.join(', ') : undefined,
         updatedAt: new Date(),
       },
       create: {
@@ -56,6 +60,9 @@ export async function saveConversationMessage(
         status: 'IN_PROGRESS',
         consentGiven: true,
         consentTimestamp: new Date(),
+        redFlagMatches: metadata?.riskFlags || [],
+        severity: metadata?.severity,
+        symptoms: metadata?.symptoms ? metadata.symptoms.join(', ') : undefined,
       }
     });
   } catch (error) {
@@ -63,3 +70,4 @@ export async function saveConversationMessage(
     throw new Error('Database persistence failed');
   }
 }
+

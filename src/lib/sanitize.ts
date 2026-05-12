@@ -66,23 +66,3 @@ export function sanitizeEmail(email: string): string {
   const cleaned = email.trim().toLowerCase();
   return emailRegex.test(cleaned) ? cleaned : '';
 }
-
-/**
- * Generate a hash of an IP address for consent logging
- * (We don't store raw IPs for privacy)
- */
-export async function hashIP(ip: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(ip + '_medassist_salt_2024');
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-}
-
-/**
- * Sanitize for URL parameters
- */
-export function sanitizeURLParam(param: string): string {
-  if (!param || typeof param !== 'string') return '';
-  return encodeURIComponent(param.slice(0, 200));
-}
