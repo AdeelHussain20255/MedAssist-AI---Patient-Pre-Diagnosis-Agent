@@ -31,7 +31,7 @@ Production-grade, SEO-optimized, and security-hardened AI Patient Pre-Diagnosis 
 
 ### 2. Installation
 ```bash
-git clone [repository-url]
+git clone https://github.com/AdeelHussain20255/MedAssist-AI---Patient-Pre-Diagnosis-Agent.git
 cd patient-prediagnosis-agent
 npm install
 ```
