@@ -16,6 +16,7 @@ import type { TriageLevel } from './triage-engine';
 import { logger } from './logger';
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.0-flash';
 
 if (!GEMINI_API_KEY && process.env.NODE_ENV === 'production') {
   throw new Error('GEMINI_API_KEY is required in production');
@@ -85,7 +86,7 @@ export async function generateChatResponse(
 
   try {
     const model = genAI.getGenerativeModel({
-      model: 'gemini-3-flash-preview',
+      model: GEMINI_MODEL,
       systemInstruction: { role: 'system', parts: [{ text: SYSTEM_PROMPT }] },
       generationConfig: { responseMimeType: 'application/json', temperature: 0.1 }
     });
@@ -150,7 +151,7 @@ export async function getAITriageClassification(
 
   try {
     const model = genAI.getGenerativeModel({
-      model: 'gemini-1.5-flash',
+      model: GEMINI_MODEL,
       systemInstruction: SYSTEM_PROMPT,
       generationConfig: {
         maxOutputTokens: 500,
