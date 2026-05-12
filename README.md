@@ -62,7 +62,17 @@ Before deploying to production (Vercel), you MUST configure the following:
    
 2. **Audit Log Integrity**:
    - The `AuditLog` table is your legal record. 
-   - **Requirement**: Use a Database User with **INSERT-ONLY** permissions for the `AuditLog` table to prevent tampering.
+   - **Requirement**: Apply the following RLS policy in Supabase to ensure immutability:
+   ```sql
+   -- Enable RLS on AuditLog
+   ALTER TABLE "AuditLog" ENABLE ROW LEVEL SECURITY;
+
+   -- App user can only INSERT
+   CREATE POLICY "audit_insert_only" ON "AuditLog"
+   FOR INSERT TO authenticated WITH CHECK (true);
+
+   -- No UPDATE/DELETE allowed (implied by omitting those policies)
+   ```
    
 3. **Sentry & Monitoring**:
    - Ensure `NEXT_PUBLIC_SENTRY_DSN` is set to track real-time clinical errors.
