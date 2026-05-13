@@ -16,7 +16,7 @@ import type { TriageLevel } from './triage-engine';
 import { logger } from './logger';
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.0-flash';
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 
 if (!GEMINI_API_KEY && process.env.NODE_ENV === 'production') {
   throw new Error('GEMINI_API_KEY is required in production');
@@ -100,7 +100,7 @@ export async function generateChatResponse(
 
     const result = await chat.sendMessage(sanitizeInput(userMessage));
     const responseText = result.response.text();
-    
+
     // Validate JSON structure
     const parsed = TriageAIResponseSchema.parse(JSON.parse(responseText));
     return {
@@ -111,14 +111,14 @@ export async function generateChatResponse(
   } catch (error: any) {
     // DIAGNOSTIC LOGGING
     console.error("FULL GEMINI ERROR (Chat):", JSON.stringify(error, null, 2));
-    
+
     if (retryCount < 1) {
       logger.warn('AI JSON failed, retrying...', { error });
       return generateChatResponse(conversationHistory, userMessage, language, retryCount + 1);
     }
-    
+
     logger.error('Gemini generateChatResponse failed after retries', error);
-    
+
     // We throw here temporarily so Vercel logs show the 500 error and the full log above
     throw error;
   }
@@ -172,7 +172,7 @@ Remember: when uncertain, escalate UP. Respond with JSON only.`;
 
     const result = await model.generateContent(prompt);
     const responseText = result.response.text();
-    
+
     const ClassificationSchema = z.object({
       level: z.enum(['MILD', 'URGENT', 'CRITICAL']),
       confidence: z.number(),

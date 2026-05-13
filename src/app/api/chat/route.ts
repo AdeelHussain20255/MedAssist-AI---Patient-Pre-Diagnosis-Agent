@@ -121,6 +121,9 @@ export async function POST(request: Request) {
     });
 
   } catch (error) {
+    // DIAGNOSTIC LOGGING
+    console.error('CHAT API CRITICAL ERROR:', error);
+    
     logger.error('Chat API error', error, {
       userId,
       requestId: request.headers.get('x-request-id')
