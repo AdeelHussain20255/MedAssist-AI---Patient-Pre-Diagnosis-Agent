@@ -7,10 +7,16 @@ import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 
 // Create Redis instance
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL!,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-});
+let redisInstance: Redis | null = null;
+function getRedis() {
+  if (!redisInstance && process.env.UPSTASH_REDIS_REST_URL) {
+    redisInstance = new Redis({
+      url: process.env.UPSTASH_REDIS_REST_URL,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN,
+    });
+  }
+  return redisInstance;
+}
 
 export interface RateLimitConfig {
   limit: number;
@@ -44,12 +50,17 @@ export async function checkRateLimit(
     return { success: true, remaining: 999, retryAfter: 0 };
   }
 
-  const ratelimit = new Ratelimit({
-    redis,
-    limiter: Ratelimit.slidingWindow(config.limit, config.window as any),
-    analytics: true,
-    prefix: "@medassist/ratelimit",
-  });
+    const redis = getRedis();
+    if (!redis) {
+      console.warn("Redis not configured. Skipping rate limit.");
+      return { success: true, remaining: 999, retryAfter: 0 };
+    }
+    const ratelimit = new Ratelimit({
+      redis,
+      limiter: Ratelimit.slidingWindow(config.limit, config.window as any),
+      analytics: true,
+      prefix: "@medassist/ratelimit",
+    });
 
   const { success, limit, remaining, reset } = await ratelimit.limit(identifier);
   const now = Date.now();
